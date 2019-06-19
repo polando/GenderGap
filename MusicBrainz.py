@@ -2,17 +2,25 @@ import requests
 import json
 import csv
 import pandas as pd
+from requests.adapters import HTTPAdapter
+from urllib3.util import Retry
 
 from bs4 import BeautifulSoup
 
 def get_soup(url):
-    page = requests.get(url)
+    session = requests.Session()
+    retry = Retry(connect=3, backoff_factor=0.5)
+    adapter = HTTPAdapter(max_retries=retry)
+    session.mount('http://', adapter)
+    session.mount('https://', adapter)
+
+    page = session.get(url)
     contents = page.content
     soup = BeautifulSoup(contents, 'html.parser')
     return soup
 
 def write_list_to_csv(headers,rows,file_name):
-    with open(file_name, 'w') as output_file:
+    with open(file_name, 'w',encoding="utf-8") as output_file:
         wr = csv.writer(output_file, delimiter='\t')
         wr.writerow(headers)
         wr.writerows(rows)
@@ -20,8 +28,8 @@ def write_list_to_csv(headers,rows,file_name):
 def read_RA_artist_names_from_file():
     artist_names = []
 
-    top_profiles = json.load(open('data/RA/top_profiles_info.json', 'rb'))
-    others_profiles = json.load(open('data/RA/others_profiles_info.json', 'rb'))
+    top_profiles = json.load(open('data/RA/top_profiles_info.json', 'r', encoding="ISO-8859-1"))
+    others_profiles = json.load(open('data/RA/others_profiles_info.json', 'r' , encoding="ISO-8859-1"))
 
     artist_names.extend(top_profiles.keys())
     artist_names.extend(others_profiles.keys())
@@ -133,7 +141,7 @@ if __name__ == '__main__':
     if crawl_artist_urls_from_MB == True:
         artist_names = read_RA_artist_names_from_file()
         #comment to crawl all artists
-        artist_names = artist_names[0:5]
+        artist_names = artist_names[0:3000]
 
         save_MB_artist_urls_to_file(artist_names,file_name)
 

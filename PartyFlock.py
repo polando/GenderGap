@@ -3,39 +3,22 @@ import json
 import csv
 import pandas as pd
 import re
-import socks
-import socket
-from lxml.html import fromstring
 import requests
-from itertools import cycle
-import random
-from retrying import retry
-from torrequest import TorRequest
+from requests.adapters import HTTPAdapter
+from urllib3.util import Retry
 
 
 from bs4 import BeautifulSoup
 
-# def get_proxies():
-#     url = 'https://free-proxy-list.net/'
-#     response = requests.get(url)
-#     parser = fromstring(response.text)
-#     proxies = set()
-#     for i in parser.xpath('//tbody/tr')[:10]:
-#         if i.xpath('.//td[7][contains(text(),"yes")]'):
-#             proxy = ":".join([i.xpath('.//td[1]/text()')[0], i.xpath('.//td[2]/text()')[0]])
-#             proxies.add(proxy)
-#     return proxies
 
 
 def get_soup(url):
-    headers = {'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/47.0.2526.106 Safari/537.36',"Accept-Language": "en-US"}
-    # proxies = {"http": "http://127.0.0.1:18275"}
-    # proxies = {'http': 'socks5://127.0.0.1:9050',
-    #                    'https': 'socks5://127.0.0.1:9050'}
-    # socks.setdefaultproxy(socks.PROXY_TYPE_SOCKS5, '127.0.0.1', 9150)
-    # socket.socket = socks.socksocket
-    with TorRequest(proxy_port=9050, ctrl_port=9051, password=None) as tr:
-        page = tr.get(url)
+    session = requests.Session()
+    retry = Retry(connect=3, backoff_factor=0.5)
+    adapter = HTTPAdapter(max_retries=retry)
+    session.mount('http://', adapter)
+    session.mount('https://', adapter)
+    page = session.get(url)
     contents = page.content
     soup = BeautifulSoup(contents, 'html.parser')
     return soup
