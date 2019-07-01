@@ -91,11 +91,14 @@ def get_external_links(soup,baseURL):
     if external_links == None:
         return {}
 
-
     links = {}
     soundcloud = external_links.find('a', title= re.compile('soundcloud'))
     spotify = external_links.find('a', title= re.compile('spotify'))
     facebook = external_links.find('a', title= re.compile('facebook'))
+    twitter = external_links.find('a', title=re.compile('twitter'))
+    itunes = external_links.find('a', title=re.compile('itunes'))
+    instagram = external_links.find('a', title=re.compile('instagram'))
+    youtube = external_links.find('a', title=re.compile('youtube'))
 
     if soundcloud != None:
         links['soundcloud'] = baseURL+soundcloud.get('href')
@@ -106,8 +109,37 @@ def get_external_links(soup,baseURL):
     if facebook != None:
         links['facebook'] = baseURL+facebook.get('href')
 
+    if twitter != None:
+        links['twitter'] = baseURL + twitter.get('href')
+
+    if itunes != None:
+        links['itunes'] = baseURL + itunes.get('href')
+
+    if instagram != None:
+        links['instagram'] = baseURL + instagram.get('href')
+
+    if youtube != None:
+        links['youtube'] = baseURL + youtube.get('href')
+
     return links
 
+def get_genres(soup):
+    genre = soup.find("td", text="Genres")
+    if genre is not None:
+        return genre.nextSibling.text
+    return ''
+
+def get_webSite(soup):
+    site = soup.find("td", text="Site")
+    if site is not None:
+        return (site.nextSibling.find('a')['href'])
+    return ''
+
+def get_bookingWebsite(soup):
+    booking = soup.find("td", text="Boekingen")
+    if booking is not None:
+        return (booking.nextSibling.find('a')['href'])
+    return ''
 
 
 def save_MB_artist_info_to_file(file_name):
@@ -117,7 +149,11 @@ def save_MB_artist_info_to_file(file_name):
     df['gender'] = ''
     df['born'] = ''
     df['position'] = ''
+    df['genres'] = ''
+    df['site'] = ''
+    df['booking'] = ''
     df['external_links'] = ''
+
 
     i=1
    # url = 'https://partyflock.nl{0}'
@@ -132,8 +168,12 @@ def save_MB_artist_info_to_file(file_name):
             row['born'] = get_MB_born(soup)
             row['position'] = get_MB_pos(soup)
             row['external_links'] = get_external_links(soup, baseURL)
+            row['genres'] = get_genres(soup)
+            row['site'] = get_webSite(soup)
+            row['booking'] = get_bookingWebsite(soup)
 
-            print(i,row['artist_name'],row['gender'],row['born'],row['position'],row['external_links'])
+
+            print(i,row['artist_name'],row['gender'],row['born'],row['position'], row['genres'],row['site'],row['booking'],row['external_links'])
 
         i = i+1
 
@@ -152,7 +192,7 @@ if __name__ == '__main__':
     if crawl_artist_urls_from_MB == True:
         artist_names = read_RA_artist_names_from_file()
         #comment to crawl all artists
-        artist_names = artist_names[0:3]
+        artist_names = artist_names[0:5]
 
         save_MB_artist_urls_to_file(artist_names,file_name)
 
