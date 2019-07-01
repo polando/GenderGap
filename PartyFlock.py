@@ -10,6 +10,7 @@ from urllib3.util import Retry
 
 from bs4 import BeautifulSoup
 
+import sys
 
 
 def get_soup(url):
@@ -34,7 +35,7 @@ def read_RA_artist_names_from_file():
     artist_names = []
 
     top_profiles = json.load(open('data/RA/top_profiles_info.json', 'r',encoding="ISO-8859-1"))
-    others_profiles = json.load(open('data/RA/others_profiles_info.json', 'r'))
+    others_profiles = json.load(open('data/RA/others_profiles_info.json', 'r',encoding="ISO-8859-1"))
 
     artist_names.extend(top_profiles.keys())
     artist_names.extend(others_profiles.keys())
@@ -144,7 +145,7 @@ def get_bookingWebsite(soup):
 
 def save_MB_artist_info_to_file(file_name):
     #df = pd.read_csv('data/MB/c_MB_artist_page_urls.tsv', sep='\t')
-    df = pd.read_csv(file_name, sep='\t')
+    df = pd.read_csv(file_name, sep='\t',encoding="ISO-8859-1")
 
     df['gender'] = ''
     df['born'] = ''
@@ -192,7 +193,7 @@ if __name__ == '__main__':
     if crawl_artist_urls_from_MB == True:
         artist_names = read_RA_artist_names_from_file()
         #comment to crawl all artists
-        artist_names = artist_names[0:5]
+        artist_names = artist_names[0:100]
 
         save_MB_artist_urls_to_file(artist_names,file_name)
 
