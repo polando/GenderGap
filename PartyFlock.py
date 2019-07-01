@@ -193,7 +193,7 @@ if __name__ == '__main__':
     if crawl_artist_urls_from_MB == True:
         artist_names = read_RA_artist_names_from_file()
         #comment to crawl all artists
-        artist_names = artist_names[0:100]
+        #artist_names = artist_names[0:100]
 
         save_MB_artist_urls_to_file(artist_names,file_name)
 

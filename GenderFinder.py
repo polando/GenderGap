@@ -101,7 +101,7 @@ if __name__ == '__main__':
     if crawl_artist_urls_from_MB == True:
         artist_names = get_artists_names(df_no_dup)
         #comment to crawl all artists
-        artist_names = artist_names[0:2000]
+        #artist_names = artist_names[0:2000]
 
         df2 = find_artist_URL_by_name(artist_names)
 
@@ -111,4 +111,4 @@ if __name__ == '__main__':
         df2 = find_gender_by_URL(df2)
 
     dfRes = pd.merge(df_original, df2 ,on='artist_name')
-    dfRes.to_csv(file_name_result, sep='\t', encoding='utf-8')
+    dfRes.to_csv(file_name_result, sep='\t', encoding='ISO-8859-1')
