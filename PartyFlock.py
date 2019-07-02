@@ -187,7 +187,7 @@ if __name__ == '__main__':
     file_name = 'PF_artist_page_urls'
     file_type = '.tsv'
     artist_names = read_RA_artist_names_from_file()
-    for i in range(100,129):
+    for i in range(0,129):
         file_batch_name = file_address+file_name+str(i)+file_type
         span = 500
         start = i*span
