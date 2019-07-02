@@ -6,6 +6,7 @@ import re
 import requests
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
+from collections import OrderedDict
 
 
 from bs4 import BeautifulSoup
@@ -26,7 +27,7 @@ def get_soup(url):
 
 
 def write_list_to_csv(headers,rows,file_name):
-    with open(file_name, 'w') as output_file:
+    with open(file_name, 'w+',encoding='UTF-8') as output_file:
         wr = csv.writer(output_file, delimiter='\t')
         wr.writerow(headers)
         wr.writerows(rows)
@@ -34,8 +35,8 @@ def write_list_to_csv(headers,rows,file_name):
 def read_RA_artist_names_from_file():
     artist_names = []
 
-    top_profiles = json.load(open('data/RA/top_profiles_info.json', 'r',encoding="ISO-8859-1"))
-    others_profiles = json.load(open('data/RA/others_profiles_info.json', 'r',encoding="ISO-8859-1"))
+    top_profiles = json.load(open('data/RA/top_profiles_info.json', 'r',encoding="UTF-8"),object_pairs_hook=OrderedDict)
+    others_profiles = json.load(open('data/RA/others_profiles_info.json', 'r',encoding="UTF-8"),object_pairs_hook=OrderedDict)
 
     artist_names.extend(top_profiles.keys())
     artist_names.extend(others_profiles.keys())
@@ -144,8 +145,7 @@ def get_bookingWebsite(soup):
 
 
 def save_MB_artist_info_to_file(file_name):
-    #df = pd.read_csv('data/MB/c_MB_artist_page_urls.tsv', sep='\t')
-    df = pd.read_csv(file_name, sep='\t',encoding="ISO-8859-1")
+    df = pd.read_csv(file_name, sep='\t',encoding="UTF-8")
 
     df['gender'] = ''
     df['born'] = ''
@@ -178,24 +178,21 @@ def save_MB_artist_info_to_file(file_name):
 
         i = i+1
 
-    #df.to_csv('data/MB/c_MB_artist_page_urls.tsv', sep='\t', index=None, header=True)
-    df.to_csv(file_name, sep='\t', index=None, header=True)
+    with open(file_name, 'w+', encoding='UTF-8') as output_file:
+        df.to_csv(output_file, sep='\t', index=None, header=False)
 
 if __name__ == '__main__':
-    #RA : https://www.residentadvisor.net/
 
-    crawl_artist_urls_from_MB = True
-    crawl_artists_from_MB = True
-
-    file_name = 'data/PF/PF_artist_page_urls.tsv'
-
-
-    if crawl_artist_urls_from_MB == True:
-        artist_names = read_RA_artist_names_from_file()
-        #comment to crawl all artists
-        #artist_names = artist_names[0:100]
-
-        save_MB_artist_urls_to_file(artist_names,file_name)
-
-    if crawl_artists_from_MB == True:
-        save_MB_artist_info_to_file(file_name)
+    file_address = 'data/PF/'
+    file_name = 'PF_artist_page_urls'
+    file_type = '.tsv'
+    artist_names = read_RA_artist_names_from_file()
+    for i in range(0,129):
+        file_batch_name = file_address+file_name+str(i)+file_type
+        span = 500
+        start = i*span
+        end = (i+1)*span
+        artist_names_batch = artist_names[start:end]
+        save_MB_artist_urls_to_file(artist_names_batch,file_batch_name)
+        save_MB_artist_info_to_file(file_batch_name)
+        print ("batch number "+str(i+1)+" done")
