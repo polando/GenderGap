@@ -98,7 +98,11 @@ def get_MB_area(soup):
 def add_columns():
     df = pd.read_csv(file_name, sep='\t')
 
+    df['gender'] = ''
+    df['born'] = ''
     df['born_in'] = ''
+    df['area'] = ''
+    df['external_links'] = ''
 
     df.to_csv(file_name, sep='\t', index=None, header=True)
 
@@ -109,7 +113,7 @@ def save_MB_artist_info_to_file(file_name, start_index):
     for i in range(start_index, end_index):
         df.iloc[i] = crawl_MB_artist_info(df.iloc[i])
 
-        if i % 1000 == 0:
+        if i % 100 == 0 or i == end_index-1:
             df.to_csv(file_name, sep='\t', index=None, header=True)
             df = pd.read_csv(file_name, sep='\t')
 
@@ -158,28 +162,10 @@ def get_relationships(soup):
     return relationships
 
 def crawl_MB_artist_page_to_test(artist_page_url):
-    url = 'https://musicbrainz.org/artist{0}'
-    url_relationships = 'https://musicbrainz.org/artist{0}/relationships'
-    if pd.isnull(artist_page_url) == False:
-        soup_url = url.format(artist_page_url)
-        print(soup_url)
-        soup = get_soup(soup_url)
-
-        artist_info = {}
-        artist_info['gender'] = get_MB_gender(soup)
-        artist_info['born'] = get_MB_born(soup)
-        artist_info['born_in'] = get_MB_born_in(soup)
-        artist_info['area'] = get_MB_area(soup)
-
-
-
-        soup_url = url_relationships.format(artist_page_url)
-        print(soup_url)
-        soup = get_soup(soup_url)
-
-        artist_info['relationships'] = get_relationships(soup)
-
-        print(artist_info)
+    data = [['artist name',artist_page_url, '', '', '', '', '']]
+    df = pd.DataFrame(data, columns=['artist_name', 'artist_page_url','gender','born','area','external_links','born_in'])
+    df.iloc[0] = crawl_MB_artist_info(df.iloc[0])
+    print(df.iloc[0])
 
 if __name__ == '__main__':
     #RA : https://www.residentadvisor.net/
@@ -190,7 +176,7 @@ if __name__ == '__main__':
     crawl_test = False
     add_column = False
 
-    artist_url_to_test = '/0b0c25f4-f31c-46a5-a4fb-ccbf53d663bd'
+    artist_url_to_test = '/artist/0b0c25f4-f31c-46a5-a4fb-ccbf53d663bd'
     file_name = 'data/MB/MB_artist_page_urls.tsv'
 
     if crawl_artist_urls_from_MB == True:
@@ -201,7 +187,7 @@ if __name__ == '__main__':
         save_MB_artist_urls_to_file(artist_names,file_name)
 
     if crawl_artists_from_MB == True:
-        save_MB_artist_info_to_file(file_name, 0)
+        save_MB_artist_info_to_file(file_name, 69400)
 
     if crawl_test == True:
         crawl_MB_artist_page_to_test(artist_url_to_test)
