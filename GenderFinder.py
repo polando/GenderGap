@@ -7,8 +7,8 @@ import pandas as pd
 
 from bs4 import BeautifulSoup
 
-def get_soup(url):
 
+def get_soup(url):
     session = requests.Session()
     retry = Retry(connect=3, backoff_factor=0.5)
     adapter = HTTPAdapter(max_retries=retry)
@@ -17,10 +17,11 @@ def get_soup(url):
 
     page = session.get(url)
 
-    #page = requests.get(url)
+    # page = requests.get(url)
     contents = page.content
     soup = BeautifulSoup(contents, 'html.parser')
     return soup
+
 
 def get_artists_names(df):
     matrix = df[df.columns[0]].as_matrix()
@@ -33,26 +34,33 @@ def read_file_save_to_df(fileName):
     return df
 
 
-def find_artist_URL_by_name(artist_names):
-    #E.g. Url : https://musicbrainz.org/search?query=Jon+Hopkins&type=artist&method=indexed
+def prepare_and_save_data(artist_names):
+    # E.g. Url : https://musicbrainz.org/search?query=Jon+Hopkins&type=artist&method=indexed
     url = "https://musicbrainz.org/search?query={0}&type=artist&method=indexed"
     artist_url_list = list()
 
-    for artist_name in artist_names:
-        soup_url = url.format(artist_name.replace(" ","+"))
+    for i in range(31219, len(artist_names)):
+        artist_names[i] = str(artist_names[i])
+        soup_url = url.format(str(artist_names[i]).replace(" ", "+"))
         soup = get_soup(soup_url)
 
         print(soup_url)
-
+        print(i)
         table = soup.find('table', {'class': 'tbl'})
         if table == None:
-            artist_url_list.append([artist_name,None])
+            artist_url_list.append([artist_names[i], None])
         else:
             artist_page_url = table.find("a").get('href')
-            artist_url_list.append([artist_name,artist_page_url])
-    dataFrame = pd.DataFrame(artist_url_list, columns=['artist_name', 'artist_page_url'])
+            artist_url_list.append([artist_names[i], artist_page_url])
 
-    return dataFrame
+        artist_url_and_name = pd.DataFrame(artist_url_list, columns=['artist_name', 'artist_page_url'])
+        artist_info = find_gender_by_URL(artist_url_and_name)
+        merged_data = pd.merge(df_original, artist_info, on='artist_name')
+        if i > 0:
+            merged_data.to_csv(file_name_result, sep='\t', encoding='utf-8-sig', header=False, mode="a")
+        else:
+            merged_data.to_csv(file_name_result, sep='\t', encoding='utf-8-sig')
+        artist_url_list = []
 
 
 def get_MB_gender(soup):
@@ -63,10 +71,9 @@ def get_MB_gender(soup):
 
 
 def find_gender_by_URL(df):
-
     df['gender'] = ''
 
-    i=1
+    i = 1
     url = 'https://musicbrainz.org{0}'
     for index, row in df.iterrows():
         artist_url = row['artist_page_url']
@@ -76,15 +83,14 @@ def find_gender_by_URL(df):
 
             row['gender'] = get_MB_gender(soup)
 
-            print(i,row['gender'])
-
-        i = i+1
+        i = i + 1
 
     return df
 
+
 if __name__ == '__main__':
-    #RA : https://www.residentadvisor.net/
-    #MB : https://musicbrainz.org/
+    # RA : https://www.residentadvisor.net/
+    # MB : https://musicbrainz.org/
 
     crawl_artist_urls_from_MB = True
     crawl_artists_from_MB = True
@@ -96,19 +102,7 @@ if __name__ == '__main__':
 
     df_no_dup = df_original.drop_duplicates(subset=['artist_name'], keep='first')
 
-    print(df_no_dup.count())
+    print("dup"+str(df_no_dup.count()))
 
-    if crawl_artist_urls_from_MB == True:
-        artist_names = get_artists_names(df_no_dup)
-        #comment to crawl all artists
-        #artist_names = artist_names[0:2000]
-
-        df2 = find_artist_URL_by_name(artist_names)
-
-      #  dfRes = pd.merge(df, df2, on='artist_name')
-
-    if crawl_artists_from_MB == True:
-        df2 = find_gender_by_URL(df2)
-
-    dfRes = pd.merge(df_original, df2 ,on='artist_name')
-    dfRes.to_csv(file_name_result, sep='\t', encoding='ISO-8859-1')
+    artist_names = get_artists_names(df_no_dup)
+    prepare_and_save_data(artist_names)
