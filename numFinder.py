@@ -1,5 +1,6 @@
 import pandas as pd
 from pandas import read_excel
+import xlsxwriter
 
 file_name_source = "Combine_data.xlsx"
 file_name_dest = "releases_merged_ready.csv"
@@ -15,5 +16,9 @@ df['num_of_releases'] = df.groupby('artist_name')['artist_name'].transform('coun
 df['sum_of_price'] = df.groupby('artist_name')['price'].transform('sum')
 df = df.drop_duplicates(subset='artist_name', keep='first')
 df = df.round({"sum_of_price":4})
-with open(file_address+file_name_dest, 'w', encoding='UTF-8') as output_file:
-    df.to_csv(output_file, sep='\t', index=None, header=True)
+#with open(file_address+file_name_dest, 'w', encoding='UTF-8') as output_file:
+#    df.to_csv(output_file, sep='\t', index=None, header=True)
+
+writer = pd.ExcelWriter(file_address+'releases_merged_ready.xlsx', engine='xlsxwriter')
+df.to_excel(writer, sheet_name='Sheet1', index=False)
+writer.save()
