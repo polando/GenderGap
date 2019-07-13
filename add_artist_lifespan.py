@@ -12,6 +12,9 @@ df = pd.read_csv(file_address + file_name_source,sep='\t' ,error_bad_lines=False
 df['max_release_year'] = df.groupby(['artist_name'])['year'].transform(max)
 df['min_release_year'] = df.groupby(['artist_name'])['year'].transform(min)
 df['life_span'] = df['max_release_year'] - df['min_release_year']
+df['num_of_releases'] = df.groupby('artist_name')['artist_name'].transform('count')
+df = df.drop_duplicates(subset='artist_name', keep='first')
+
 
 with open(file_address + file_name_dest, 'w', encoding='UTF-8') as output_file:
     df.to_csv(output_file, sep='\t', index=None, header=True)
