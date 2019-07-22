@@ -10,6 +10,6 @@ Release file containing sum:<br>
 Evaluation file:<br>
 [Evaluation of 500 artists](data/Evaluation/MB_500_artists.xlsx)
 
-[binder link](https://hub.gke.mybinder.org/user/polando-gendergap-93sdigvc/tree#notebooks) 
+[binder link](https://mybinder.org/v2/gh/polando/GenderGap/master) 
 
 
